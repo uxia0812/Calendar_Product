@@ -239,12 +239,14 @@ body.theme-seventeen{
 }
 
 /* ── MONTH VIEW ── */
-.month-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;background:var(--border)}
+.month-grid{display:grid;grid-template-columns:repeat(7,1fr);grid-auto-rows:90px;gap:1px;background:var(--border)}
 .mday{
   background:rgba(255,255,255,0.45);
   padding:5px 4px 4px;
   cursor:pointer;transition:background .15s;
-  min-height:60px;position:relative;
+  height:90px;min-height:90px;max-height:90px;
+  overflow:hidden;position:relative;
+  box-sizing:border-box;
   -webkit-tap-highlight-color:transparent;
 }
 .mday:hover{background:rgba(255,255,255,0.65)}
@@ -262,13 +264,14 @@ body.theme-seventeen{
 .mday.today.sun .mday-num,.mday.today.sat .mday-num{color:#fff}
 .mday-dots{display:flex;flex-wrap:wrap;gap:2px;padding:0 1px}
 .mdot{width:5px;height:5px;border-radius:50%}
-.mday-evts{display:flex;flex-direction:column;gap:1px;margin-top:1px}
+.mday-evts{display:flex;flex-direction:column;gap:1px;margin-top:2px;overflow:hidden}
 .mevt-pill{
   font-size:9px;font-weight:600;
-  padding:1px 4px;border-radius:3px;
+  padding:2px 4px;border-radius:3px;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-  opacity:.9;
+  opacity:.9;line-height:1.3;
 }
+.mevt-more{font-size:8.5px;color:var(--txt3);padding:0 3px;font-weight:600;line-height:1.4}
 
 /* ════════════════════════════════════════
    EVENTS + GOODS (bottom scrollable)
@@ -1254,10 +1257,11 @@ function buildMonth(area){
       });
       cell.appendChild(dotsEl);
 
-      // show 1-2 event pills on larger cells
+      // show event pills (max 2) + more count
       const pillsEl=document.createElement('div');
       pillsEl.className='mday-evts';
-      evts.slice(0,2).forEach(e=>{
+      const MAX_PILLS=2;
+      evts.slice(0,MAX_PILLS).forEach(e=>{
         const g=groupOf(e.group);
         const pill=document.createElement('div');
         pill.className='mevt-pill';
@@ -1266,10 +1270,10 @@ function buildMonth(area){
         pill.textContent=e.name;
         pillsEl.appendChild(pill);
       });
-      if(evts.length>2){
+      if(evts.length>MAX_PILLS){
         const more=document.createElement('div');
-        more.style.cssText=`font-size:9px;color:var(--txt3);padding:0 3px;font-weight:600`;
-        more.textContent=`+${evts.length-2} more`;
+        more.className='mevt-more';
+        more.textContent=`+${evts.length-MAX_PILLS} more`;
         pillsEl.appendChild(more);
       }
       cell.appendChild(pillsEl);
