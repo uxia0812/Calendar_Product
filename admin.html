@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — KF Calendar</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0f0f13;color:#e0e0f0;min-height:100vh}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:16px 24px;background:#1a1a24;border-bottom:1px solid #2a2a3a}
+.topbar h1{font-size:18px;font-weight:700;color:#c4a0f0}
+.topbar span{font-size:13px;color:#888}
+.tabs{display:flex;gap:0;border-bottom:1px solid #2a2a3a;background:#1a1a24}
+.tab{padding:12px 24px;cursor:pointer;font-size:14px;font-weight:600;color:#888;border-bottom:2px solid transparent}
+.tab.on{color:#c4a0f0;border-bottom-color:#c4a0f0}
+.container{padding:20px 24px;max-width:900px;margin:0 auto}
+.card{background:#1a1a24;border-radius:12px;border:1px solid #2a2a3a;padding:20px;margin-bottom:12px}
+.card-top{display:flex;align-items:flex-start;gap:16px;justify-content:space-between}
+.card-info{flex:1}
+.badge{display:inline-block;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:700;margin-right:6px}
+.badge-bts{background:#4a1a6a;color:#d09af0}
+.badge-enhypen{background:#4a2a0a;color:#f0a060}
+.badge-seventeen{background:#2a1a4a;color:#a090e0}
+.badge-type{background:#2a2a3a;color:#aaa}
+.card-name{font-size:15px;font-weight:700;margin:8px 0 4px;color:#e0e0f0}
+.card-meta{font-size:12px;color:#888;line-height:1.6}
+.card-meta a{color:#8080c0;text-decoration:underline}
+.card-actions{display:flex;gap:8px;flex-shrink:0}
+button{border:none;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer}
+.btn-approve{background:#1a4a2a;color:#60d090}
+.btn-approve:hover{background:#1f5a32}
+.btn-reject{background:#4a1a1a;color:#d06060}
+.btn-reject:hover{background:#5a2020}
+.btn-add{background:#3a2a5a;color:#c4a0f0;padding:10px 20px;font-size:14px}
+.btn-add:hover{background:#4a3a6a}
+.empty{text-align:center;color:#555;padding:40px;font-size:14px}
+.status-pending{color:#f0a060}
+.status-approved{color:#60d090}
+.status-rejected{color:#d06060}
+.section-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.section-hdr h2{font-size:15px;font-weight:700;color:#c4a0f0}
+/* Add Event Form */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.form-grid.full{grid-template-columns:1fr}
+input,select,textarea{width:100%;padding:10px 12px;background:#0f0f1a;border:1px solid #2a2a3a;border-radius:8px;color:#e0e0f0;font-size:14px;outline:none}
+input:focus,select:focus{border-color:#6040a0}
+select option{background:#0f0f1a}
+label{font-size:12px;color:#888;display:block;margin-bottom:4px}
+.tag{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600;margin-right:4px}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <h1>KF Calendar — Admin</h1>
+  <span id="stats">Loading…</span>
+</div>
+
+<div class="tabs">
+  <div class="tab on" onclick="showTab('submissions')">Fan Submissions <span id="pending-badge"></span></div>
+  <div class="tab" onclick="showTab('events')">Confirmed Events</div>
+  <div class="tab" onclick="showTab('add')">+ Add Event</div>
+</div>
+
+<div class="container">
+  <!-- SUBMISSIONS -->
+  <div id="tab-submissions">
+    <div class="section-hdr">
+      <h2>Pending Fan Submissions</h2>
+      <span style="font-size:12px;color:#555">Review and approve or reject</span>
+    </div>
+    <div id="submissions-list"><div class="empty">Loading…</div></div>
+  </div>
+
+  <!-- EVENTS -->
+  <div id="tab-events" style="display:none">
+    <div class="section-hdr">
+      <h2>Confirmed Events</h2>
+    </div>
+    <div id="events-list"><div class="empty">Loading…</div></div>
+  </div>
+
+  <!-- ADD EVENT -->
+  <div id="tab-add" style="display:none">
+    <div class="section-hdr"><h2>Add Event Manually</h2></div>
+    <div class="card">
+      <div class="form-grid">
+        <div>
+          <label>Group</label>
+          <select id="a-group">
+            <option value="bts">BTS</option>
+            <option value="enhypen">ENHYPEN</option>
+            <option value="seventeen">SEVENTEEN</option>
+          </select>
+        </div>
+        <div>
+          <label>Type</label>
+          <select id="a-type">
+            <option value="comeback">Comeback</option>
+            <option value="concert">Concert</option>
+            <option value="tour">Tour</option>
+            <option value="fansign">Fan Sign</option>
+            <option value="fancon">Fan Con</option>
+            <option value="release">Release</option>
+            <option value="special">Special</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-grid full" style="margin-bottom:12px">
+        <div><label>Event Name</label><input id="a-name" placeholder="e.g. ARIRANG World Tour — Seoul Night 1"></div>
+      </div>
+      <div class="form-grid full" style="margin-bottom:12px">
+        <div><label>Venue</label><input id="a-venue" placeholder="e.g. Goyang Stadium"></div>
+      </div>
+      <div class="form-grid">
+        <div><label>Date Start</label><input id="a-date-start" type="date"></div>
+        <div><label>Date End (optional)</label><input id="a-date-end" type="date"></div>
+      </div>
+      <div class="form-grid full" style="margin-top:12px">
+        <div><label>Source URL (optional)</label><input id="a-url" placeholder="https://…"></div>
+      </div>
+      <button class="btn-add" style="margin-top:16px;width:100%" onclick="addEvent()">Add Event</button>
+      <div id="a-msg" style="margin-top:10px;font-size:13px;text-align:center;min-height:18px;color:#60d090"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const SUPA_URL = 'https://zbnronyslswwbwdiuzjg.supabase.co';
+const SUPA_KEY = 'sb_publishable_Io-m0ZUsJTNky1ANkXpQ-g_JoWZrzWO';
+
+// 관리자용: service_role 키가 없으면 anon 키로 처리
+// RLS 정책에서 submissions update/delete 허용 필요
+async function api(path, opts={}) {
+  const res = await fetch(`${SUPA_URL}/rest/v1/${path}`, {
+    headers: {
+      'apikey': SUPA_KEY,
+      'Authorization': `Bearer ${SUPA_KEY}`,
+      'Content-Type': 'application/json',
+      'Prefer': opts.prefer || 'return=representation',
+      ...(opts.headers||{}),
+    },
+    ...opts,
+  });
+  return res;
+}
+
+const GROUP_COLORS = {bts:'badge-bts',enhypen:'badge-enhypen',seventeen:'badge-seventeen'};
+
+function showTab(name) {
+  ['submissions','events','add'].forEach(t => {
+    document.getElementById(`tab-${t}`).style.display = t===name ? 'block' : 'none';
+    document.querySelectorAll('.tab')[['submissions','events','add'].indexOf(t)].classList.toggle('on', t===name);
+  });
+  if(name==='submissions') loadSubmissions();
+  if(name==='events') loadEvents();
+}
+
+// ── SUBMISSIONS ──
+async function loadSubmissions() {
+  const el = document.getElementById('submissions-list');
+  el.innerHTML = '<div class="empty">Loading…</div>';
+  const res = await api('event_submissions?select=*&order=created_at.desc', {prefer:''});
+  const rows = await res.json();
+
+  const pending = rows.filter(r=>r.status==='pending');
+  const others  = rows.filter(r=>r.status!=='pending');
+
+  document.getElementById('pending-badge').textContent = pending.length > 0 ? `(${pending.length})` : '';
+  document.getElementById('stats').textContent = `${pending.length} pending · ${rows.length} total submissions`;
+
+  if(rows.length===0){ el.innerHTML='<div class="empty">No submissions yet.</div>'; return; }
+
+  el.innerHTML = '';
+  [...pending,...others].forEach(r => {
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = `
+      <div class="card-top">
+        <div class="card-info">
+          <div>
+            <span class="badge ${GROUP_COLORS[r.group_id]||'badge-type'}">${r.group_id?.toUpperCase()}</span>
+            <span class="badge badge-type">${r.type}</span>
+            <span class="status-${r.status}" style="font-size:11px;font-weight:700">${r.status.toUpperCase()}</span>
+          </div>
+          <div class="card-name">${r.name}</div>
+          <div class="card-meta">
+            📅 ${r.date_start}${r.date_end?` → ${r.date_end}`:''} &nbsp;
+            📍 ${r.venue||'—'} &nbsp;
+            👤 ${r.submitted_by||'anonymous'}<br>
+            ${r.evidence_url?`🔗 <a href="${r.evidence_url}" target="_blank">${r.evidence_url.slice(0,60)}…</a>`:''}
+            ${r.reject_reason?`<br>❌ Reason: ${r.reject_reason}`:''}
+          </div>
+        </div>
+        ${r.status==='pending' ? `
+        <div class="card-actions">
+          <button class="btn-approve" onclick="approveSubmission('${r.id}', ${JSON.stringify(r).replace(/'/g,"\\'")} )">✓ Approve</button>
+          <button class="btn-reject" onclick="rejectSubmission('${r.id}')">✕ Reject</button>
+        </div>` : ''}
+      </div>
+    `;
+    el.appendChild(card);
+  });
+}
+
+async function approveSubmission(id, row) {
+  // events 테이블에 추가
+  const evtRes = await api('events', {
+    method: 'POST',
+    body: JSON.stringify({
+      group_id:   row.group_id,
+      type:       row.type,
+      name:       row.name,
+      venue:      row.venue||'',
+      date_start: row.date_start,
+      date_end:   row.date_end||null,
+      source:     'fan',
+      source_url: row.evidence_url||'',
+    }),
+  });
+  if (!evtRes.ok) { alert('Failed to add to events: ' + await evtRes.text()); return; }
+
+  // submission 상태 업데이트
+  await api(`event_submissions?id=eq.${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ status: 'approved', reviewed_at: new Date().toISOString() }),
+  });
+  loadSubmissions();
+}
+
+async function rejectSubmission(id) {
+  const reason = prompt('Rejection reason (optional):') ?? '';
+  await api(`event_submissions?id=eq.${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ status: 'rejected', reject_reason: reason, reviewed_at: new Date().toISOString() }),
+  });
+  loadSubmissions();
+}
+
+// ── EVENTS ──
+async function loadEvents() {
+  const el = document.getElementById('events-list');
+  el.innerHTML = '<div class="empty">Loading…</div>';
+  const res = await api('events?select=*&order=date_start.asc', {prefer:''});
+  const rows = await res.json();
+  if(!rows.length){ el.innerHTML='<div class="empty">No confirmed events.</div>'; return; }
+  el.innerHTML='';
+  rows.forEach(r => {
+    const card = document.createElement('div');
+    card.className='card';
+    card.innerHTML=`
+      <div class="card-top">
+        <div class="card-info">
+          <div>
+            <span class="badge ${GROUP_COLORS[r.group_id]||'badge-type'}">${r.group_id?.toUpperCase()}</span>
+            <span class="badge badge-type">${r.type}</span>
+            <span class="badge badge-type" style="background:#1a2a1a;color:#60d090">${r.source}</span>
+          </div>
+          <div class="card-name">${r.name}</div>
+          <div class="card-meta">📅 ${r.date_start} &nbsp; 📍 ${r.venue||'—'}</div>
+        </div>
+        <div class="card-actions">
+          <button class="btn-reject" onclick="deleteEvent('${r.id}')">Delete</button>
+        </div>
+      </div>
+    `;
+    el.appendChild(card);
+  });
+}
+
+async function deleteEvent(id) {
+  if(!confirm('Delete this event?')) return;
+  await api(`events?id=eq.${id}`, { method:'DELETE', prefer:'' });
+  loadEvents();
+}
+
+// ── ADD EVENT ──
+async function addEvent() {
+  const group     = document.getElementById('a-group').value;
+  const type      = document.getElementById('a-type').value;
+  const name      = document.getElementById('a-name').value.trim();
+  const venue     = document.getElementById('a-venue').value.trim();
+  const dateStart = document.getElementById('a-date-start').value;
+  const dateEnd   = document.getElementById('a-date-end').value || null;
+  const url       = document.getElementById('a-url').value.trim();
+  const msg       = document.getElementById('a-msg');
+
+  if(!name||!dateStart){ msg.style.color='#d06060'; msg.textContent='Name and Date are required.'; return; }
+  msg.textContent='Saving…'; msg.style.color='#888';
+
+  const res = await api('events', {
+    method:'POST',
+    body: JSON.stringify({ group_id:group, type, name, venue, date_start:dateStart, date_end:dateEnd, source:'manual', source_url:url }),
+  });
+  if(res.ok||res.status===201){
+    msg.style.color='#60d090'; msg.textContent='✓ Event added!';
+    ['a-name','a-venue','a-date-start','a-date-end','a-url'].forEach(id=>document.getElementById(id).value='');
+  } else {
+    msg.style.color='#d06060'; msg.textContent='Error: '+(await res.text());
+  }
+}
+
+// ── INIT ──
+// submissions update/delete RLS 정책 추가 필요 여부 체크
+loadSubmissions();
+</script>
+</body>
+</html>
