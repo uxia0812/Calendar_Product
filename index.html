@@ -79,20 +79,27 @@ body{
   display:flex;flex-direction:column;
   min-height:100%;
   -webkit-font-smoothing:antialiased;
-  /* 기본 = BTS */
+  background:transparent;
+  position:relative;
+}
+/* 배경 그라데이션 — position:fixed로 스크롤과 분리해 GPU 렌더링 */
+body::before{
+  content:'';
+  position:fixed;inset:0;z-index:-1;
   background: linear-gradient(to top right, #D4AAFF 0%, #E8CCFF 35%, #FFD0F0 65%, #FFB8E4 100%);
   transition: background 0.5s ease;
+  will-change: background;
 }
 /* BTS: 보라(좌하) ↔ 핑크(우상) */
-body.theme-bts{
+body.theme-bts::before{
   background: linear-gradient(to top right, #D4AAFF 0%, #E8CCFF 35%, #FFD0F0 65%, #FFB8E4 100%);
 }
 /* ENHYPEN: 오렌지(좌하) ↔ 블루(우상) */
-body.theme-enhypen{
+body.theme-enhypen::before{
   background: linear-gradient(to top right, #FFD4A8 0%, #FFE8C8 35%, #D8EAFF 65%, #BACED8 100%);
 }
 /* SEVENTEEN: 핑크(좌하) ↔ 블루(우상) */
-body.theme-seventeen{
+body.theme-seventeen::before{
   background: linear-gradient(to top right, #FFB8D0 0%, #FFD4E4 35%, #C8D8FF 65%, #AABCF0 100%);
 }
 
