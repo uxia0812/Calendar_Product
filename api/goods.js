@@ -11,7 +11,7 @@ const LIMIT_PER_GROUP = 100;
 
 async function fetchQuery(queryId, apiKey) {
   const url = `https://${REDASH_HOST}/api/queries/${queryId}/results.json?api_key=${apiKey}`;
-  const res = await fetch(url);
+  const res = await fetch(url, { signal: AbortSignal.timeout(25000) });
   if (!res.ok) throw new Error(`Query ${queryId}: HTTP ${res.status}`);
   const json = await res.json();
   if (json.job) throw new Error(`Query ${queryId}: 실행 중`);
