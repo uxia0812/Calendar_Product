@@ -468,6 +468,18 @@ body.theme-seventeen{
 }
 @keyframes toastIn{from{opacity:0;transform:translateX(-50%) translateY(8px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
 @keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+/* feedback btn */
+.fb-btn{
+  position:fixed;bottom:20px;right:16px;z-index:8000;
+  background:var(--bg4);border:1px solid var(--border2);
+  border-radius:22px;padding:8px 14px;
+  font-size:12px;font-weight:600;color:var(--txt2);
+  cursor:pointer;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  box-shadow:0 2px 12px rgba(0,0,0,0.12);
+  display:flex;align-items:center;gap:6px;
+}
+.fb-btn:hover{color:var(--accent)}
 </style>
 </head>
 <body>
@@ -562,15 +574,17 @@ const SUPA_URL = 'https://zbnronyslswwbwdiuzjg.supabase.co';
 const SUPA_KEY = 'sb_publishable_Io-m0ZUsJTNky1ANkXpQ-g_JoWZrzWO';
 
 async function supaFetch(path, opts={}) {
+  const {prefer, headers: extraHeaders, ...fetchOpts} = opts;
   const res = await fetch(`${SUPA_URL}/rest/v1/${path}`, {
+    ...fetchOpts,
     headers: {
       'apikey': SUPA_KEY,
       'Authorization': `Bearer ${SUPA_KEY}`,
       'Content-Type': 'application/json',
-      'Prefer': opts.prefer || 'return=minimal',
-      ...(opts.headers||{}),
+      'Accept': 'application/json',
+      ...(prefer !== undefined ? {'Prefer': prefer} : {}),
+      ...(extraHeaders||{}),
     },
-    ...opts,
   });
   return res;
 }
@@ -1508,17 +1522,14 @@ fetchEvents(); // Supabase에서 일정 로드
 // ─────────────────────────────────────────
 async function fetchEvents() {
   try {
-    const res = await supaFetch('events?select=*&order=date_start.asc', {
-      headers: { 'Accept': 'application/json' },
-      prefer: '',
-    });
-    if (!res.ok) return;
+    const res = await supaFetch('events?select=*&order=date_start.asc');
+    if (!res.ok) { console.warn('[KF_Calendar] fetchEvents HTTP', res.status); return; }
     const rows = await res.json();
     if (!Array.isArray(rows) || rows.length === 0) return;
     EVENTS = rows.map(r => ({
       id:    r.id,
       group: r.group_id,
-      date:  r.date_start,
+      date:  r.date_start,          // "2026-04-09" 형식 그대로 사용
       name:  r.name,
       type:  r.type,
       venue: r.venue || '',
@@ -1628,6 +1639,81 @@ async function submitEvent() {
     msg.style.color = '#e05'; msg.textContent = 'Network error. Please try again.';
   }
 }
+
+// ─────────────────────────────────────────
+//  FEEDBACK
+// ─────────────────────────────────────────
+function openFeedbackModal() {
+  if(document.getElementById('fb-modal')) return;
+  const overlay = document.createElement('div');
+  overlay.id = 'fb-modal';
+  overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:9998;display:flex;align-items:flex-end;justify-content:center;padding:0 0 80px';
+  overlay.onclick = e => { if(e.target===overlay) overlay.remove(); };
+  overlay.innerHTML = `
+    <div style="background:var(--bg4);border-radius:var(--r) var(--r) 0 0;padding:24px;width:100%;max-width:480px;
+                box-shadow:0 -8px 40px rgba(0,0,0,0.2);color:var(--txt1);">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+        <div style="font-size:15px;font-weight:700">Share your feedback</div>
+        <div onclick="document.getElementById('fb-modal').remove()" style="cursor:pointer;font-size:20px;color:var(--txt2);line-height:1">×</div>
+      </div>
+      <div style="margin-bottom:14px">
+        <div style="font-size:12px;color:var(--txt2);margin-bottom:8px">How would you rate this app?</div>
+        <div id="fb-stars" style="display:flex;gap:8px;font-size:28px;cursor:pointer">
+          ${[1,2,3,4,5].map(n=>`<span data-s="${n}" onclick="setRating(${n})" style="opacity:0.3;transition:opacity .15s">★</span>`).join('')}
+        </div>
+      </div>
+      <textarea id="fb-text" placeholder="Any thoughts? Feature requests, bugs, anything…"
+        style="width:100%;min-height:100px;padding:10px 12px;background:var(--bg3);border:1px solid var(--border2);
+               border-radius:var(--r-sm);color:var(--txt1);font-size:14px;resize:vertical;outline:none;
+               font-family:inherit;box-sizing:border-box"></textarea>
+      <button onclick="submitFeedback()" style="margin-top:12px;width:100%;background:var(--accent);color:#fff;
+              border:none;border-radius:var(--r-sm);padding:12px;font-size:14px;font-weight:700;cursor:pointer">
+        Submit Feedback
+      </button>
+      <div id="fb-msg" style="margin-top:8px;font-size:12px;text-align:center;color:var(--txt2);min-height:16px"></div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+}
+
+let _fbRating = 0;
+function setRating(n) {
+  _fbRating = n;
+  document.querySelectorAll('#fb-stars span').forEach(s => {
+    s.style.opacity = Number(s.dataset.s) <= n ? '1' : '0.3';
+  });
+}
+
+async function submitFeedback() {
+  const msg  = document.getElementById('fb-msg');
+  const text = document.getElementById('fb-text').value.trim();
+  if(!_fbRating) { msg.style.color='#e05'; msg.textContent='Please select a rating.'; return; }
+  msg.style.color='var(--txt2)'; msg.textContent='Submitting…';
+  try {
+    const res = await supaFetch('feedbacks', {
+      method:'POST',
+      prefer:'return=minimal',
+      body: JSON.stringify({ rating: _fbRating, message: text }),
+    });
+    if(res.ok || res.status===201) {
+      msg.style.color='#0a0'; msg.textContent='✓ Thank you for your feedback!';
+      setTimeout(()=>document.getElementById('fb-modal')?.remove(), 1800);
+    } else {
+      msg.style.color='#e05'; msg.textContent='Error. Please try again.';
+    }
+  } catch(e) {
+    msg.style.color='#e05'; msg.textContent='Network error.';
+  }
+}
 </script>
+
+<!-- Feedback Button -->
+<div class="fb-btn" onclick="openFeedbackModal()">
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+  </svg>
+  Feedback
+</div>
+
 </body>
 </html>
