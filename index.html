@@ -1906,8 +1906,8 @@ function openSubmitModal() {
   overlay.onclick = e => { if(e.target===overlay) overlay.remove(); };
 
   overlay.innerHTML = `
-    <div style="background:var(--bg4);border-radius:var(--r);padding:24px;width:100%;max-width:420px;
-                box-shadow:0 8px 40px rgba(0,0,0,0.25);color:var(--txt1);">
+    <div style="background:rgba(255,255,255,0.55);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-radius:var(--r);padding:24px;width:100%;max-width:420px;
+                box-shadow:0 8px 40px rgba(0,0,0,0.25);color:var(--txt1);border:1px solid rgba(255,255,255,0.4);">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
         <div style="font-size:16px;font-weight:700;">Submit an Event</div>
         <div onclick="document.getElementById('submit-modal').remove()"
@@ -1999,8 +1999,8 @@ function openFeedbackModal() {
   overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:9998;display:flex;align-items:flex-end;justify-content:center;padding:0';
   overlay.onclick = e => { if(e.target===overlay) overlay.remove(); };
   overlay.innerHTML = `
-    <div style="background:var(--bg4);border-radius:var(--r) var(--r) 0 0;padding:24px;width:100%;max-width:480px;
-                box-shadow:0 -8px 40px rgba(0,0,0,0.2);color:var(--txt1);">
+    <div style="background:rgba(255,255,255,0.55);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-radius:var(--r) var(--r) 0 0;padding:24px;width:100%;max-width:480px;
+                box-shadow:0 -8px 40px rgba(0,0,0,0.2);color:var(--txt1);border:1px solid rgba(255,255,255,0.4);">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
         <div style="font-size:15px;font-weight:700">Share your feedback</div>
         <div onclick="document.getElementById('fb-modal').remove()" style="cursor:pointer;font-size:20px;color:var(--txt2);line-height:1">×</div>

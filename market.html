@@ -1447,7 +1447,7 @@ function openFeedbackModal() {
   overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:9998;display:flex;align-items:flex-end;justify-content:center;padding:0';
   overlay.onclick = e => { if (e.target === overlay) overlay.remove(); };
   overlay.innerHTML = `
-    <div style="background:rgba(255,255,255,0.95);border-radius:var(--r) var(--r) 0 0;padding:24px;width:100%;max-width:480px;
+    <div style="background:rgba(255,255,255,0.55);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-radius:var(--r) var(--r) 0 0;padding:24px;width:100%;max-width:480px;border:1px solid rgba(255,255,255,0.4);
                 box-shadow:0 -8px 40px rgba(0,0,0,0.2);color:var(--txt1);">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
         <div style="font-size:15px;font-weight:700">Share your feedback</div>
