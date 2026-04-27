@@ -985,7 +985,7 @@ function cardHTML(item) {
   const tags = classifyItem(item.name);
   const rare = isRare(item);
   const groupLabel = { bts: 'BTS', seventeen: 'SVT', enhypen: 'ENHYPEN' }[item.group] || item.group;
-  const bunjangUrl = `https://bunjang.global/product/${item.id}`;
+  const bunjangUrl = `https://globalbunjang.com/product/${item.id}`;
 
   const tagBadges = tags.slice(0, 2).map(t => {
     const rule = TAG_RULES.find(r => r.tag === t);
@@ -1053,7 +1053,7 @@ function renderRelated(show) {
   relatedTitle.textContent = `${tagName} 세트 완성하려면 이것도 필요해요`;
 
   relatedRow.innerHTML = relatedPool.map(item => {
-    const bunjangUrl = `https://bunjang.global/product/${item.id}`;
+    const bunjangUrl = `https://globalbunjang.com/product/${item.id}`;
     const img = item.imageUrl
       ? `<img class="rcard-img" src="${item.imageUrl}" alt="${escHtml(item.name)}" loading="lazy">`
       : `<div style="width:100%;aspect-ratio:1/1;background:rgba(240,235,255,0.5);display:flex;align-items:center;justify-content:center;font-size:24px">🃏</div>`;
