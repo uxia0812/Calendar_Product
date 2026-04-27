@@ -592,12 +592,6 @@ body.theme-seventeen::before{
       background:var(--accent);color:#fff;border:none;border-radius:20px;
       padding:6px 14px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;
     ">+ Submit Event</button>
-    <div class="notif">
-      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-      </svg>
-      <div class="notif-dot"></div>
-    </div>
   </div>
 </header>
 
@@ -640,9 +634,9 @@ body.theme-seventeen::before{
 // ─────────────────────────────────────────
 //  CONSTANTS
 // ─────────────────────────────────────────
-// KST(UTC+9) 기준 오늘 날짜
-const _kst = new Date(new Date().toLocaleString('en-US', {timeZone:'Asia/Seoul'}));
-const TODAY = new Date(_kst.getFullYear(), _kst.getMonth(), _kst.getDate());
+// 유저 로컬 시각 기준 오늘 날짜
+const _now = new Date();
+const TODAY = new Date(_now.getFullYear(), _now.getMonth(), _now.getDate());
 
 const GROUPS = [
   {id:'bts',       label:'BTS',        color:'#A855C8', theme:'theme-bts'},
@@ -1545,10 +1539,18 @@ function renderBottom(){
       const g=groupOf(e.group);
       const chip=document.createElement('div');
       chip.className='evt-chip'+(e.id===selectedEventId?' on':'');
+      const [ey,em,ed] = e.date.split('-').map(Number);
+      const evtDate = new Date(ey, em-1, ed);
+      const diffDays = Math.round((evtDate - TODAY) / 86400000);
+      const ddayStr = diffDays === 0 ? 'D-Day' : diffDays > 0 ? `D-${diffDays}` : `D+${Math.abs(diffDays)}`;
+      const ddayColor = diffDays === 0 ? '#FF4757' : diffDays > 0 ? g.color : 'var(--txt3)';
       chip.innerHTML=`
         <div class="evt-chip-dot" style="background:${g.color}"></div>
         <div class="evt-chip-body">
-          <div class="evt-chip-group" style="color:${g.color}">${g.label}</div>
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+            <div class="evt-chip-group" style="color:${g.color}">${g.label}</div>
+            <div style="font-size:9.5px;font-weight:800;color:${ddayColor};letter-spacing:.3px">${ddayStr}</div>
+          </div>
           <div class="evt-chip-name">${e.name}</div>
           <div class="evt-chip-type">${TYPE_EMOJI[e.type]||''} ${TYPE_LABEL[e.type]||e.type} · ${e.venue}</div>
         </div>
