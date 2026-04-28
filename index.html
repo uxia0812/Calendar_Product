@@ -506,9 +506,18 @@ body.theme-seventeen::before{
   -webkit-tap-highlight-color:transparent;
 }
 .live-card:hover{transform:translateY(-2px);box-shadow:0 6px 16px rgba(255,80,80,0.15)}
+.live-card-img-wrap{
+  width:100%;aspect-ratio:1/1;position:relative;
+  background:rgba(255,240,240,0.6);overflow:hidden;
+  display:flex;align-items:center;justify-content:center;
+}
 .live-card-img{
-  width:100%;aspect-ratio:1/1;object-fit:cover;
-  background:rgba(255,240,240,0.6);display:block;
+  position:absolute;inset:0;width:100%;height:100%;
+  object-fit:cover;display:block;
+  transition:opacity .2s;
+}
+.live-card-img-fallback{
+  font-size:28px;line-height:1;z-index:0;
 }
 .live-card-body{padding:6px 8px 8px}
 .live-card-name{
@@ -1811,8 +1820,10 @@ function renderGoods(bot, evtsOnDay){
       a.className='live-card';
       a.href=url; a.target='_blank'; a.rel='noopener';
       a.innerHTML=`
-        ${imgSrc?`<img class="live-card-img" src="${imgSrc}" alt="${escHtml(item.name)}" loading="lazy" onerror="this.style.display='none'">`
-          :`<div class="live-card-img" style="display:flex;align-items:center;justify-content:center;font-size:28px">🃏</div>`}
+        <div class="live-card-img-wrap">
+          ${imgSrc?`<img class="live-card-img" src="${imgSrc}" alt="${escHtml(item.name)}" loading="lazy" onerror="this.style.opacity='0'">`:''}
+          <div class="live-card-img-fallback">🃏</div>
+        </div>
         <div class="live-card-body">
           <div class="live-card-name">${escHtml(item.name)}</div>
           <div class="live-card-price" style="color:${liveRule.color}">₩${item.price.toLocaleString()}</div>
